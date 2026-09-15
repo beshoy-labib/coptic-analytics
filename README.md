@@ -1,10 +1,14 @@
 # Coptic Analytics
 
-**Attendance and pastoral-care analytics for Coptic Orthodox dioceses.**
+**Engagement and pastoral-care analytics for Coptic Orthodox dioceses.**
 
 ![Coptic Analytics dashboard overview](docs/Overview.png)
 
 *Power BI dashboard built on a Databricks lakehouse — [see all pages ↓](#power-bi-dashboard)*
+
+> **Note:** All data in this project is synthetic, generated for development
+> and testing. The names, families, birthdays and attendance records shown do
+> not belong to real people or churches.
 
 ---
 
@@ -98,7 +102,8 @@ there to point back at Databricks, so the Service can refresh the imported
 data from the gold tables without going through Desktop.
 
 The report has three pages, drilling from the whole organization down to a
-single class.
+single class. Every figure and name in the screenshots comes from the
+generated test dataset.
 
 ### Overview
 
