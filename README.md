@@ -2,6 +2,10 @@
 
 **Attendance and pastoral-care analytics for Coptic Orthodox dioceses.**
 
+![Coptic Analytics dashboard overview](docs/Overview.png)
+
+*Power BI dashboard built on a Databricks lakehouse — [see all pages ↓](#power-bi-dashboard)*
+
 ---
 
 ## Problem
@@ -79,6 +83,71 @@ not answer yet.
 ![Gold layer star schema](docs/Data%20Model%20Start%20Schema.png)
 
 **[Open the interactive version →](https://claude.ai/code/artifact/f78ff1f2-c27d-49b5-b1c2-2471168e7805)**
+
+## Power BI Dashboard
+
+The report connects to the gold layer in Databricks using **Import mode**:
+the star schema is loaded into the Power BI model, so visuals query the
+in-memory copy rather than sending a query to a SQL warehouse on every click.
+For a model this size that keeps the report fast and the Databricks compute
+cost near zero — the warehouse only runs during a refresh.
+
+After building it in Power BI Desktop, the report was **published to the
+Power BI Service**, and the dataset's data source credentials were configured
+there to point back at Databricks, so the Service can refresh the imported
+data from the gold tables without going through Desktop.
+
+The report has three pages, drilling from the whole organization down to a
+single class.
+
+### Overview
+
+Headline counts across every diocese, registered members per church, the
+gender split, and the monthly attendance rate.
+
+![Overview page](docs/Overview.png)
+
+### Church Level
+
+One church at a time: members by department and age band, birthdays this
+month, the attendance trend, and the ten most consistent members.
+
+![Church level page](docs/Church_Level_Analysis.png)
+
+### Department Level
+
+Filterable down to department, class, activity and year: attendance trend per
+department, attendance rate by activity, and a follow-up list of members below
+50% attendance with the date they were last present.
+
+![Department level page](docs/Department_Level.png)
+
+### Key DAX Measures
+
+Attendance is counted from `fact_attendance`, one row per member per event.
+The attendance rate is `present / (present + absent)` — events not marked yet
+are left out, so a late register does not look like a drop in attendance.
+
+```dax
+Attendance Rate = DIVIDE ( [Present], [Present] + [Absent] )
+```
+
+The report separates people who *attend* from people who are *registered*.
+`Members` counts only those who appear in the fact table; `Registered Members`
+uses `TREATAS` to apply the church filter directly to `dim_member`, so it
+counts everyone currently enrolled, including members who have never
+attended.
+
+```dax
+Registered Members =
+CALCULATE (
+    DISTINCTCOUNT ( dim_member[member_id] ),
+    TREATAS ( VALUES ( dim_church[church_id] ), dim_member[church_id] ),
+    dim_member[is_current_member] = TRUE ()
+)
+```
+
+**[All measures, why they exist and where they are used →](docs/powerbi_measures.md)**
 
 ## License
 
